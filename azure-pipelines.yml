@@ -1,0 +1,76 @@
+# Azure DevOps CI/CD pipeline for automated Document QA
+# Triggers on every push to main and daily at 09:00 UTC.
+
+trigger:
+  branches:
+    include:
+      - main
+
+schedules:
+  - cron: "0 9 * * *"
+    displayName: 'Daily 9 AM UTC document QA run'
+    branches:
+      include: [main]
+    always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.11'
+  AZURE_STORAGE_ACCOUNT: 'docqastorage'
+  INPUT_CONTAINER: 'documents-in'
+  OUTPUT_CONTAINER: 'reports-out'
+
+steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(pythonVersion)'
+    inputs:
+      versionSpec: '$(pythonVersion)'
+
+  - script: |
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+    displayName: '📦 Install dependencies'
+
+  - task: AzureCLI@2
+    displayName: '☁️ Pull documents from Azure Blob'
+    inputs:
+      azureSubscription: 'AzureServiceConnection'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        mkdir -p ./docs
+        az storage blob download-batch \
+          --account-name $(AZURE_STORAGE_ACCOUNT) \
+          --destination ./docs \
+          --source $(INPUT_CONTAINER)
+
+  - script: |
+      python qa_pipeline.py --input ./docs --output ./reports
+    displayName: '🧪 Run automated document QA scoring'
+
+  - task: PublishTestResults@2
+    displayName: '📊 Publish QA test results'
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'reports/test-results.xml'
+      failTaskOnFailedTests: false
+
+  - task: AzureCLI@2
+    displayName: '📤 Upload reports back to Blob'
+    inputs:
+      azureSubscription: 'AzureServiceConnection'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az storage blob upload-batch \
+          --account-name $(AZURE_STORAGE_ACCOUNT) \
+          --destination $(OUTPUT_CONTAINER) \
+          --source ./reports
+
+  - task: PublishBuildArtifacts@1
+    displayName: '📦 Publish report artifacts'
+    inputs:
+      pathToPublish: './reports'
+      artifactName: 'qa-reports'

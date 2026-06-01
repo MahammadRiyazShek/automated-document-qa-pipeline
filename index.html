@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Automated Document QA Pipeline — Azure Blob + DevOps CI/CD</title>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand"><span>📑</span><h1>Automated Document QA Pipeline</h1></div>
+  <div class="badge">Azure Blob · Azure DevOps · 70% Effort Reduction</div>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>End-to-End Automated Text Scoring at Scale</h2>
+    <p>Migrated a fully manual document QA process to an automated pipeline using <b>Azure Blob Storage</b> and <b>Azure DevOps CI/CD</b>, reducing manual QA effort by <b>70%</b>.</p>
+  </section>
+
+  <div class="kpis">
+    <div class="kpi"><b>70%</b><span>Effort Saved</span></div>
+    <div class="kpi"><b>24/7</b><span>Automated Runs</span></div>
+    <div class="kpi"><b>6</b><span>Pipeline Stages</span></div>
+    <div class="kpi"><b>100%</b><span>CI/CD Coverage</span></div>
+  </div>
+
+  <section class="card">
+    <h2>🚀 Live Pipeline Simulator</h2>
+    <p class="muted">Click "Run Pipeline" to simulate document ingestion → blob upload → QA scoring → report generation.</p>
+    <button class="btn primary" onclick="runPipeline()">▶️ Run Pipeline</button>
+    <button class="btn ghost" onclick="resetPipeline()">🔄 Reset</button>
+
+    <div class="pipeline-visual" id="pipeline">
+      <div class="stage" data-stage="0"><div class="stage-icon">📥</div><h4>1. Trigger</h4><p>Webhook / Schedule</p><span class="state">⏳ Pending</span></div>
+      <div class="arrow">→</div>
+      <div class="stage" data-stage="1"><div class="stage-icon">☁️</div><h4>2. Azure Blob Ingest</h4><p>Pull from container</p><span class="state">⏳ Pending</span></div>
+      <div class="arrow">→</div>
+      <div class="stage" data-stage="2"><div class="stage-icon">📄</div><h4>3. Extract Text</h4><p>OCR / PDF / DOCX</p><span class="state">⏳ Pending</span></div>
+      <div class="arrow">→</div>
+      <div class="stage" data-stage="3"><div class="stage-icon">🧪</div><h4>4. Automated Scoring</h4><p>NLP quality checks</p><span class="state">⏳ Pending</span></div>
+      <div class="arrow">→</div>
+      <div class="stage" data-stage="4"><div class="stage-icon">📊</div><h4>5. Generate Report</h4><p>JSON + dashboard</p><span class="state">⏳ Pending</span></div>
+      <div class="arrow">→</div>
+      <div class="stage" data-stage="5"><div class="stage-icon">📤</div><h4>6. Upload Results</h4><p>Back to Blob + Notify</p><span class="state">⏳ Pending</span></div>
+    </div>
+
+    <div class="log-box" id="logs">
+      <h3>📜 Pipeline Logs</h3>
+      <pre id="logContent">Click "Run Pipeline" to start...</pre>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>📊 Recent Pipeline Runs</h2>
+    <table class="runs-table">
+      <thead><tr><th>Build #</th><th>Date</th><th>Documents</th><th>Avg Score</th><th>Duration</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>#1247</td><td>2026-05-31 09:14</td><td>284</td><td>87.3%</td><td>4m 12s</td><td><span class="status success">✓ Success</span></td></tr>
+        <tr><td>#1246</td><td>2026-05-30 09:14</td><td>312</td><td>85.7%</td><td>4m 38s</td><td><span class="status success">✓ Success</span></td></tr>
+        <tr><td>#1245</td><td>2026-05-29 09:14</td><td>267</td><td>89.1%</td><td>3m 58s</td><td><span class="status success">✓ Success</span></td></tr>
+        <tr><td>#1244</td><td>2026-05-28 09:14</td><td>298</td><td>72.4%</td><td>5m 02s</td><td><span class="status warn">⚠ Warning</span></td></tr>
+        <tr><td>#1243</td><td>2026-05-27 09:14</td><td>301</td><td>88.6%</td><td>4m 21s</td><td><span class="status success">✓ Success</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>🏗️ Architecture</h2>
+    <div class="arch">
+      <div class="arch-col">
+        <h3>Source</h3>
+        <div class="block">📁 Documents Drop Folder</div>
+        <div class="block">☁️ Azure Blob Storage (input/)</div>
+      </div>
+      <div class="arch-col">
+        <h3>Compute (Azure DevOps CI/CD)</h3>
+        <div class="block">🔧 azure-pipelines.yml</div>
+        <div class="block">🐍 Python QA scoring agent</div>
+        <div class="block">📈 Auto-test & lint</div>
+      </div>
+      <div class="arch-col">
+        <h3>Output</h3>
+        <div class="block">☁️ Azure Blob (output/)</div>
+        <div class="block">📊 PowerBI / Grafana dashboard</div>
+        <div class="block">📧 Email / Teams notify</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>📜 azure-pipelines.yml</h2>
+    <pre class="yaml-box">trigger:
+  branches:
+    include: [main]
+schedules:
+  - cron: "0 9 * * *"     # Daily 9 AM UTC
+    branches: [main]
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  AZURE_STORAGE_ACCOUNT: 'docqastorage'
+  INPUT_CONTAINER: 'documents-in'
+  OUTPUT_CONTAINER: 'reports-out'
+
+steps:
+- task: UsePythonVersion@0
+  inputs: { versionSpec: '3.11' }
+
+- script: pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+- task: AzureCLI@2
+  displayName: 'Pull documents from Blob'
+  inputs:
+    azureSubscription: 'AzureServiceConn'
+    scriptType: 'bash'
+    inlineScript: |
+      az storage blob download-batch -d ./docs -s $(INPUT_CONTAINER)
+
+- script: python qa_pipeline.py --input ./docs --output ./reports
+  displayName: 'Run automated QA scoring'
+
+- task: AzureCLI@2
+  displayName: 'Upload reports'
+  inputs:
+    azureSubscription: 'AzureServiceConn'
+    scriptType: 'bash'
+    inlineScript: |
+      az storage blob upload-batch -d $(OUTPUT_CONTAINER) -s ./reports
+
+- task: PublishTestResults@2
+  inputs: { testResultsFiles: 'reports/test-results.xml' }
+</pre>
+  </section>
+</main>
+
+<footer>© 2026 Automated Document QA Pipeline · 70% manual QA effort reduction</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
